@@ -1,8 +1,14 @@
 package br.com.tempest;
 
 import java.util.regex.*;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.util.LinkedList;
 import java.util.List;
+
 
 public class JSReader
 {
@@ -18,7 +24,10 @@ public class JSReader
     public static Pattern localPathPattern = Pattern.compile(
         "['\"](\\w+[\\\\/]?)+['\"]"
     );
-    // Matches
+    public static String helloWorld(){
+        return "Olá Mundo!";
+    }
+
     public static List<String> lookForMatches(String script, Pattern searchPattern)
     {
         Matcher matcher = searchPattern.matcher(script);
@@ -30,8 +39,11 @@ public class JSReader
         return results;
     }
 
-    public static List<String> parse(String script)
+    public static List<String> parseHtmlBody(String htmlText)
     {
-        return null;
+        Document doc = Jsoup.parse(htmlText);
+        Elements scripts = doc.getElementsByTag("script");
+        return scripts.eachText();
+
     }
 }

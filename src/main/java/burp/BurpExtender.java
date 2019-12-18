@@ -3,7 +3,8 @@ package burp;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
-// import br.com.tempest.JSReader;
+
+import br.com.tempest.JSReader;
 
 public class BurpExtender implements IBurpExtender, IHttpListener//, IScannerCheck
 {
@@ -16,7 +17,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener//, IScannerChe
     {
         this.callbacks = callbacks;
 
-        this.callbacks.setExtensionName("JavaScript Reader");
+        this.callbacks.setExtensionName("JavaScript Scanner");
         this.callbacks.registerHttpListener(this);
         // this.callbacks.registerScannerCheck(this);
 
@@ -36,7 +37,15 @@ public class BurpExtender implements IBurpExtender, IHttpListener//, IScannerChe
             int bodyOffset = responseInfo.getBodyOffset();
             byte[] responseBody = Arrays.copyOfRange(response, bodyOffset, response.length);
             String body = new String(responseBody);
-            stdout.println(body);
+            List<String> headers = responseInfo.getHeaders();
+            for(String header: headers)
+            {
+                if (header.matches("Content-Type: text/html;?.*"))
+                {
+                    stdout.println(JSReader.parseHtmlBody(body));
+                    
+                }
+            }
         }
     }
     
