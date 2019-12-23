@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,9 +21,9 @@ public class JSReader
     );
     // Matches common string patterns
     public static Pattern stringPattern = Pattern.compile("(('([^'])*')|(\"[^\"]*\"))");
-    // Matches generic local path strings
+    // Matches generic local path strings including string with fragment identified portions
     public static Pattern localPathPattern = Pattern.compile(
-        "['\"](\\w+[\\\\/]?)+['\"]"
+        "['\"]((/[\\w\\?=&]+/?)*|([\\w\\?=&]*/([\\w\\?=&]*/?)*))(#.*)?['\"]"
     );
     public static String helloWorld(){
         return "Olá Mundo!";
@@ -34,7 +35,13 @@ public class JSReader
         LinkedList<String> results = new LinkedList<String>();
         while (matcher.find())
         {
-            results.add(script.substring(matcher.start(), matcher.end()));
+            String match = script.substring(matcher.start(), matcher.end());
+            String[] ignore = {"''", "\"\"", "'/'", "\"/\""};
+            List<String> listOfIgnoredMatches = Arrays.asList(ignore);
+            if (!listOfIgnoredMatches.contains(match))
+            {
+                results.add(match);
+            }
         }
         return results;
     }
@@ -45,5 +52,10 @@ public class JSReader
         Elements scripts = doc.getElementsByTag("script");
         return scripts.eachText();
 
+    }
+
+    public List<String> parseJavaScriptBody(String scriptText)
+    {
+        return null;
     }
 }

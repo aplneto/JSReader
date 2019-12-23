@@ -4,6 +4,11 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import br.com.tempest.JSReader;
 
 public class BurpExtender implements IBurpExtender, IHttpListener//, IScannerCheck
@@ -30,21 +35,53 @@ public class BurpExtender implements IBurpExtender, IHttpListener//, IScannerChe
     public void processHttpMessage( int toolFlag,
     boolean messageIsRequest, IHttpRequestResponse messageInfo)
     {
-        if (!messageIsRequest)
+        boolean shouldContinue = true;
+        if (shouldContinue && !messageIsRequest)
         {
             byte[] response = messageInfo.getResponse();
             IResponseInfo responseInfo = helpers.analyzeResponse(response);
+            IRequestInfo requestInfo = helpers.analyzeRequest(messageInfo);
             int bodyOffset = responseInfo.getBodyOffset();
             byte[] responseBody = Arrays.copyOfRange(response, bodyOffset, response.length);
             String body = new String(responseBody);
-            List<String> headers = responseInfo.getHeaders();
-            for(String header: headers)
+            if (responseInfo.getStatedMimeType() == "script")
             {
-                if (header.matches("Content-Type: text/html;?.*"))
+                stdout.println("Script @ "+requestInfo.getUrl().toString());
+                try
                 {
-                    stdout.println(JSReader.parseHtmlBody(body));
                     
                 }
+                catch (Exception ex)
+                {
+
+                }
+            }
+            else if (responseInfo.getStatedMimeType() != "")
+            {
+                stdout.println(responseInfo.getStatedMimeType() +
+                " @ "+ requestInfo.getUrl().toString());
+                Document dom = Jsoup.parse(body);
+                Elements scriptTags = dom.getElementsByTag("Script");
+                if (scriptTags.size() > 0)
+                {
+                    stdout.println("Total Script Tags found:" + scriptTags.size());
+                    for(Element scriptTag: scriptTags)
+                    {
+                        List<String> routes = JSReader.lookForMatches(scriptTag.html(), JSReader.localPathPattern);
+                        if (routes.size() > 0)
+                        {
+                            stdout.println("Localroutes found: " + routes.size());
+                            for (String route: routes)
+                            {
+                                stdout.println(route);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+
             }
         }
     }
