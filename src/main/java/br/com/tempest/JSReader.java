@@ -21,10 +21,16 @@ public class JSReader
     );
     // Matches common string patterns
     public static Pattern stringPattern = Pattern.compile("(('([^'])*')|(\"[^\"]*\"))");
-    // Matches generic local path strings including string with fragment identified portions
+    // Matches localpath strings https://regexr.com/4r6s0
     public static Pattern localPathPattern = Pattern.compile(
-        "['\"]((/[\\w\\?=&]+/?)*|([\\w\\?=&]*/([\\w\\?=&]*/?)*))(#.*)?['\"]"
+        "((/(\\w+/?)+" // Matches paths begining with foward slash
+        + "|(\\w+/(\\w/?)*)" // Matches paths with interchangeable foward slashes
+        + "|\\w+(/|\\.html))+" // Matches paths ending with foward slash or file extension
+        +"((\\?(\\w+=\\w*&?)*))?(#.*)?)" // Matches query strings and fragment identifiers
+        +"|(\\w+" // Matches single word routes
+        +"((\\?(\\w+=(\\w+)?&?)+)|#.*)+)" // Matches query strings and fragment identifiers
     );
+    
     public static String helloWorld(){
         return "Olá Mundo!";
     }
