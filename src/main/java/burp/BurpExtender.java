@@ -2,7 +2,6 @@ package burp;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.List;
 // import br.com.tempest.JSReader;
 
 public class BurpExtender implements IBurpExtender, IHttpListener//, IScannerCheck
